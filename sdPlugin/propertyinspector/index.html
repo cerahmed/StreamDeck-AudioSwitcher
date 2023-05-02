@@ -60,7 +60,7 @@
       </select>
     </div>
     <div class="sdpi-item regex-div">
-      <div class="sdpi-item-label">Regex (Primary)</div>
+      <div id="primary-regex-label" class="sdpi-item-label">Regex (Primary)</div>
       <input id="primaryRegexPattern" class="sdpi-item-value" type="text" name="regex" value="*." onchange="saveSettings()" onkeypress="this.onchange()" oninput="this.onchange()">
     </div>
     <div class="sdpi-item regex-div">
@@ -284,11 +284,19 @@
       // when Regex matching is selected -> show regex text fields
       if (matchStrategy == 'Regex') {
         const regDivs = document.getElementsByClassName('regex-div');
-        for (i=0; i < regDivs.length; i++){
-          regDivs[i].style.visibility = 'visible';
+        regDivs[0].style.visibility = 'visible'; // primary
+        
+        // if action is 'set' -> do not show secondary & rename primary regex
+        if (actionInfo == "com.fredemmott.audiooutputswitch.set") {
+          document.getElementById("primary-regex-label").innerText = 'Regex';
+          regDivs[1].style.visibility = 'hidden'; // secondary
+        }
+        else {
+          document.getElementById("primary-regex-label").innerText = 'Regex (Primary)';
+          regDivs[1].style.visibility = 'visible'; // secondary
         }
       }
-      // when Regex matching is NOT selected -> hide regex text fields
+      // when Regex matching is NOT selected -> hide regex fields
       else {
         const regDivs = document.getElementsByClassName('regex-div');
         for (i=0; i < regDivs.length; i++){
