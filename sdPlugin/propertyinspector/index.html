@@ -120,8 +120,8 @@
       document.getElementById('mainWrapper').classList.remove('hidden');
 
       // fill regex patterns if it exists in settings
-      const primaryPattern = settings.primaryRegexPattern;
-      const secondaryPattern = settings.secondaryRegexPattern;
+      const primaryPattern = settings.primaryRegexPattern ? settings.primaryRegexPattern : "";
+      const secondaryPattern = settings.secondaryRegexPattern ? settings.secondaryRegexPattern : "";
 
       document.getElementById("primaryRegexPattern").value = primaryPattern;
       document.getElementById("secondaryRegexPattern").value = secondaryPattern;
