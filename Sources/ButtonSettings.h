@@ -14,6 +14,7 @@ using namespace FredEmmott::Audio;
 enum class DeviceMatchStrategy {
   ID,
   Fuzzy,
+  Regex,
 };
 
 struct ButtonSettings {
@@ -22,6 +23,8 @@ struct ButtonSettings {
   AudioDeviceInfo primaryDevice;
   AudioDeviceInfo secondaryDevice;
   DeviceMatchStrategy matchStrategy = DeviceMatchStrategy::ID;
+  std::string primaryRegexPattern;
+  std::string secondaryRegexPattern;
 
   // Changes if there's a fuzzy match
   std::string VolatilePrimaryID() const;

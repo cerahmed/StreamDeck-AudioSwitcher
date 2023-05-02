@@ -15,6 +15,7 @@ NLOHMANN_JSON_SERIALIZE_ENUM(
   {
     {DeviceMatchStrategy::ID, "ID"},
     {DeviceMatchStrategy::Fuzzy, "Fuzzy"},
+    {DeviceMatchStrategy::Regex, "Regex"},
   });
 
 void from_json(const nlohmann::json& j, ButtonSettings& bs) {
@@ -49,6 +50,14 @@ void from_json(const nlohmann::json& j, ButtonSettings& bs) {
   if (j.contains("matchStrategy")) {
     bs.matchStrategy = j.at("matchStrategy");
   }
+
+  if (j.contains("primaryRegexPattern")) {
+    bs.primaryRegexPattern = j.at("primaryRegexPattern");
+  }
+
+  if (j.contains("secondaryRegexPattern")) {
+    bs.secondaryRegexPattern = j.at("secondaryRegexPattern");
+  }
 }
 
 void to_json(nlohmann::json& j, const ButtonSettings& bs) {
@@ -58,13 +67,20 @@ void to_json(nlohmann::json& j, const ButtonSettings& bs) {
     {"primary", bs.primaryDevice},
     {"secondary", bs.secondaryDevice},
     {"matchStrategy", bs.matchStrategy},
+    {"primaryRegexPattern", bs.primaryRegexPattern},
+    {"secondaryRegexPattern", bs.secondaryRegexPattern},
   };
 }
 
 namespace {
 std::string GetVolatileID(
   const AudioDeviceInfo& device,
-  DeviceMatchStrategy strategy) {
+  DeviceMatchStrategy strategy,
+  std::string regexPattern) {
+    
+  ESDLog("**** Getting Volatile ID *****");
+  ESDLog("**** Matching Strategy: {} - Regex: {}", strategy, regexPattern);
+
   if (device.id.empty()) {
     return {};
   }
@@ -95,9 +111,9 @@ std::string GetVolatileID(
 }// namespace
 
 std::string ButtonSettings::VolatilePrimaryID() const {
-  return GetVolatileID(primaryDevice, matchStrategy);
+  return GetVolatileID(primaryDevice, matchStrategy, primaryRegexPattern);
 }
 
 std::string ButtonSettings::VolatileSecondaryID() const {
-  return GetVolatileID(secondaryDevice, matchStrategy);
+  return GetVolatileID(secondaryDevice, matchStrategy, secondaryRegexPattern);
 }

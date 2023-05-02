@@ -53,10 +53,19 @@
     </div>
     <div type="select" class="sdpi-item">
       <div class="sdpi-item-label">Device matching</div>
-      <select class="sdpi-item-value select" id="matchStrategy" onchange="saveSettings();">
+      <select class="sdpi-item-value select" id="matchStrategy" onchange="matchStrategyChanged();">
         <option value="ID">Exact</option>
         <option value="Fuzzy">Fuzzy</option>
+        <option value="Regex">Regex - Advanced</option>
       </select>
+    </div>
+    <div class="sdpi-item regex-div">
+      <div class="sdpi-item-label">Regex (Primary)</div>
+      <input id="primary-regex-pattern" class="sdpi-item-value" type="text" name="regex" value="*.">
+    </div>
+    <div class="sdpi-item regex-div">
+      <div class="sdpi-item-label">Regex (Secondary)</div>
+      <input id="secondary-regex-pattern" class="sdpi-item-value" type="text" name="regex" value="*.">
     </div>
   </div>
 
@@ -109,6 +118,7 @@
 
       updateDeviceLists(isInput ? inputDevices : outputDevices);
       document.getElementById('mainWrapper').classList.remove('hidden');
+      checkRegexMatchingField();
       saveSettings();
     }
 
@@ -250,6 +260,33 @@
       console.log(settings);
       $SD.api.setSettings(uuid, settings);
     }
+    
+    function matchStrategyChanged() {
+      checkRegexMatchingField();
+
+      // save settings
+      saveSettings();
+     }
+
+     function checkRegexMatchingField() {
+      const matchStrategy = document.getElementById('matchStrategy').value;
+      
+      // when Regex matching is selected -> show regex text fields
+      if (matchStrategy == 'Regex') {
+        const regDivs = document.getElementsByClassName('regex-div');
+        for (i=0; i < regDivs.length; i++){
+          regDivs[i].style.visibility = 'visible';
+        }
+      }
+      // when Regex matching is NOT selected -> hide regex text fields
+      else {
+        const regDivs = document.getElementsByClassName('regex-div');
+        for (i=0; i < regDivs.length; i++){
+          regDivs[i].style.visibility = 'hidden';
+        }
+      }
+
+     }
   </script>
 
 </body>
