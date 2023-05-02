@@ -61,11 +61,11 @@
     </div>
     <div class="sdpi-item regex-div">
       <div class="sdpi-item-label">Regex (Primary)</div>
-      <input id="primary-regex-pattern" class="sdpi-item-value" type="text" name="regex" value="*.">
+      <input id="primaryRegexPattern" class="sdpi-item-value" type="text" name="regex" value="*." onchange="saveSettings()" onkeypress="this.onchange()" oninput="this.onchange()">
     </div>
     <div class="sdpi-item regex-div">
       <div class="sdpi-item-label">Regex (Secondary)</div>
-      <input id="secondary-regex-pattern" class="sdpi-item-value" type="text" name="regex" value="*.">
+      <input id="secondaryRegexPattern" class="sdpi-item-value" type="text" name="regex" value="*." onchange="saveSettings()" onkeypress="this.onchange()" oninput="this.onchange()">
     </div>
   </div>
 
@@ -118,6 +118,14 @@
 
       updateDeviceLists(isInput ? inputDevices : outputDevices);
       document.getElementById('mainWrapper').classList.remove('hidden');
+
+      // fill regex patterns if it exists in settings
+      const primaryPattern = settings.primaryRegexPattern;
+      const secondaryPattern = settings.secondaryRegexPattern;
+
+      document.getElementById("primaryRegexPattern").value = primaryPattern;
+      document.getElementById("secondaryRegexPattern").value = secondaryPattern;
+
       checkRegexMatchingField();
       saveSettings();
     }
@@ -257,6 +265,8 @@
       settings.direction = isInput ? 'input' : 'output';
       settings.role = document.getElementById('defaultRole').checked ? 'default' : 'communication';
       settings.matchStrategy = document.getElementById('matchStrategy').value;
+      settings.primaryRegexPattern = document.getElementById('primaryRegexPattern').value;
+      settings.secondaryRegexPattern = document.getElementById('secondaryRegexPattern').value;
       console.log(settings);
       $SD.api.setSettings(uuid, settings);
     }
