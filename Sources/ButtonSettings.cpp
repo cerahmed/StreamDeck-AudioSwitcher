@@ -4,6 +4,7 @@
  * LICENSE file.
  */
 
+#include <regex>
 #include "ButtonSettings.h"
 
 #include <StreamDeckSDK/ESDLogger.h>
@@ -77,9 +78,6 @@ std::string GetVolatileID(
   const AudioDeviceInfo& device,
   DeviceMatchStrategy strategy,
   std::string regexPattern) {
-    
-  ESDLog("**** Getting Volatile ID *****");
-  ESDLog("**** Matching Strategy: {} - Regex: {}", strategy, regexPattern);
 
   if (device.id.empty()) {
     return {};
@@ -93,20 +91,58 @@ std::string GetVolatileID(
     return device.id;
   }
 
-  for (const auto& [otherID, other] : GetAudioDeviceList(device.direction)) {
-    if (
-      device.interfaceName == other.interfaceName
-      && device.endpointName == other.endpointName) {
-      ESDDebug(
-        "Fuzzy device match for {}/{}",
-        device.interfaceName,
-        device.endpointName);
-      return otherID;
+  // if fuzzy matching OR regex pattern is empty
+  if (strategy == DeviceMatchStrategy::Fuzzy || regexPattern == "") {
+    for (const auto& [otherID, other] : GetAudioDeviceList(device.direction)) {
+      if (
+        device.interfaceName == other.interfaceName
+        && device.endpointName == other.endpointName
+        && GetAudioDeviceState(device.id) == AudioDeviceState::CONNECTED) {
+        ESDDebug(
+          "Fuzzy device match for {}/{}",
+          device.interfaceName,
+          device.endpointName);
+        return otherID;
+      }
     }
+    ESDDebug(
+      "Failed fuzzy match for {}/{}", device.interfaceName, device.endpointName);
+    return device.id;
   }
-  ESDDebug(
-    "Failed fuzzy match for {}/{}", device.interfaceName, device.endpointName);
-  return device.id;
+
+  // if regex matching AND regex pattern exists
+  if (strategy == DeviceMatchStrategy::Regex) {
+    std::regex rgx;
+    std::smatch deviceMatch;
+    // try regex pattern -> if it fails, return selected device id
+    try
+    {
+      rgx = std::basic_regex(regexPattern);
+    }
+    catch(const std::exception& e)
+    {
+      return device.id;
+    }
+    
+    for (const auto& [otherID, other] : GetAudioDeviceList(device.direction)) {
+      // check if other device is connected -> otherwise continue to next
+      if (GetAudioDeviceState(otherID) != AudioDeviceState::CONNECTED) {
+        continue;
+      }
+      // if other device matches regex pattern -> return its id
+      if (std::regex_search(other.displayName, deviceMatch, rgx)) {
+        ESDDebug(
+          "Found device {} that matches regex {}",
+          other.displayName,
+          regexPattern);
+        return otherID;
+      }
+    }
+    
+    // if none of the devices match regex pattern -> return selected device id
+    ESDDebug("No device found matching regex {} -> returning selected device id", regexPattern);
+    return device.id;
+  }
 }
 }// namespace
 
